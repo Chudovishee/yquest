@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">You Quest</string>
+    
+    <string name="login_title">You Quest - Выбор аккаунта</string>
+    <string name="ylogin_title">You Quest - Вход</string>
+    <string name="yreg_title">You Quest - Регистрация</string>
+     <string name="googlelogin_title">You Quest - Вход</string>
+    
+    <string name="login_text">При первом запуске выберите акаунт.</string>
+    
+    <string name="ylogin_text">Авторизация с использованием аккаунта\n You Quest</string>
+    
+    <string name="yreg_text">Создание аккаунта\n You Quest</string>
+    
+    <string name="ylogin_mail_text">E-mail:</string>
+    <string name="ylogin_name_text">Имя:</string>
+    <string name="ylogin_password_text">Пароль:</string>
+    <string name="ylogin_password2_text">Повторите пароль:</string>
+	<string name="ylogin_enter_text">Войти</string>
+	<string name="ylogin_reg_text">Регистрация</string>
+	
+    <string name="use_google_button">Использовать Google Account</string>
+    <string name="use_yquest_button">Использовать аккаунт You Quest</string>
+    
+    
+    <string name="validate_mail_error">Введите коректно e-mail</string>
+    <string name="validate_password_error">Минимальная длина пароля 4 символа</string>
+    <string name="validate_password2_error">Пароль и его подтверждение не совпадаюты</string>
+    <string name="validate_name_error">Введите одно или два слова через пробел</string>
+    
+    <string name="loading_wait">Загрузка. Подождите...</string>
+    
+    <string name="connection_error">Ошибка соединения с сервером. Проверте Ваше соединение с интернетом и повторите попытку.</string>
+    <string name="duplicate_mail_error">Пользователь с таким e-mail уже зарегистрирован в системе.</string>
+    <string name="login_fail_error">Неправильный e-mail или пароль. Возможно вы выбрали неправильный метод авторизации. Если вы забыли пароль, вы можете его восстановить на нашем сайте.</string>
+    
+    <string name="ytoken_fail_error">Невозможно выполнить автоматический вход в систему. Возможно вы входили в систему с другого устройства. Попробуйте авторизоваться вручную.</string>
+    
+    <string name="google_auth_notice">Вы выбрали авторизацию через аккаут Google.
+    	Нажмите "OK" чтобы начать авторизацию.
+    	Вы перейдете на страницу Google, где Вам потребуется ввести e-mail и пароль,
+    	а затем подтвердить доступ приложения к продукту "Google Контакты".
+    	Это позволит приложению автоматически использовать ваш e-mail, имя и Ваше фото.
+    	Нажмите "Отмена" если вы передумали использовать этот метод авторизации.
+    	</string>
+    
+    
+    <string name="ok">OK</string>
+    <string name="cancel">Отмена</string>
+     
+    
+    
+</resources>

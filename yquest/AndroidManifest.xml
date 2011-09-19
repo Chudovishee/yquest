@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="com.yquest"
+      android:versionCode="1"
+      android:versionName="1.0">
+    <uses-sdk android:minSdkVersion="8" />
+    
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_LOCATION"/>
+	<uses-permission android:name="android.permission.ACCESS_GPS"/>
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+	<uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"/>
+    <application android:icon="@drawable/icon" android:label="@string/app_name">
+        
+        <activity android:name=".YquestActivity"
+                  android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+
+			</intent-filter>
+        </activity>
+        
+        <activity 
+        	android:name="YquestLogin"
+        	android:label="@string/ylogin_title">
+        </activity>
+         
+        <activity 
+        	android:name="GoogleLoginActivity"
+        	android:label="@string/googlelogin_title"
+        	android:launchMode="singleTask">
+		
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				<data android:scheme="x-oauthflow" android:host="googlelogin" />
+			</intent-filter>
+        </activity>
+        
+        <activity 
+        	android:name="YquestReg"
+        	android:label="@string/yreg_title">
+        </activity>
+        <activity 
+        	android:name="QuestMapActivity"
+        	android:label="@string/app_name">
+        </activity>
+        
+        
+        
+        <uses-library android:name="com.google.android.maps"></uses-library>
+
+
+    </application>
+</manifest>

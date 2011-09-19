@@ -1,0 +1,15 @@
+{
+ "error": {
+  "errors": [
+   {
+    "domain": "com.google.auth",
+    "reason": "invalidAuthentication",
+    "message": "invalid header",
+    "locationType": "header",
+    "location": "Authorization"
+   }
+  ],
+  "code": 401,
+  "message": "invalid header"
+ }
+}
