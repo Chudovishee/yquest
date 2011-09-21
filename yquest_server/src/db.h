@@ -6,20 +6,22 @@
  */
 
 #include <mongo/client/dbclient.h>
+#include <mongo/client/connpool.h>
 
 #ifndef DB_H_
 #define DB_H_
 
-class DB : public mongo::DBClientConnection {
+class DB : public mongo::DBClientBase {
 public:
-	static DB* Instance(){
+	static DB* Instance();
+	static DB* SingleInstance();
 
-		if(theSingleInstance == NULL)
-				theSingleInstance = new DB();
-		return theSingleInstance;
-    }
+	void done();
+	void kill();
+	~DB();
 private:
 	DB();
+	mongo::ScopedDbConnection * connection;
 	static DB* theSingleInstance;
 };
 

@@ -21,7 +21,8 @@ Config::Config(){
 	OAUTH_SECRET		= "";
 	OAUTH_SCOPE			= "";
 	OAUTH_REQUEST_URL	= "";
-	OAUTH_API_URL		= "";
+	OAUTH_PROFILE_REQUEST_URL		= "";
+	OAUTH_MAIL_REQUEST_URL			= "";
 	OAUTH_ACCESS_URL	= "";
 	OAUTH_AUTHORIZE_URL	= "";
 }
@@ -49,11 +50,12 @@ void Config::load(boost::property_tree::ptree config){
 	SERVER_PUBLIC_KEY	= config.get<std::string>("ssl.public_key");
 	SERVER_DH			= config.get<std::string>("ssl.dh_key");
 	//oauth
-	OAUTH_KEY			= config.get<std::string>("oauth.key");
-	OAUTH_SECRET		= config.get<std::string>("oauth.secret");
-	OAUTH_SCOPE			= config.get<std::string>("oauth.scope");
-	OAUTH_REQUEST_URL	= config.get<std::string>("oauth.request_url");
-	OAUTH_API_URL		= config.get<std::string>("oauth.api");
-	OAUTH_ACCESS_URL	= config.get<std::string>("oauth.access_url");
-	OAUTH_AUTHORIZE_URL	= config.get<std::string>("oauth.authorize_url");
+	OAUTH_KEY					= config.get<std::string>("oauth.key");
+	OAUTH_SECRET				= config.get<std::string>("oauth.secret");
+	OAUTH_SCOPE					= config.get<std::string>("oauth.scope");
+	OAUTH_REQUEST_URL			= config.get<std::string>("oauth.request_url");
+	OAUTH_PROFILE_REQUEST_URL	= config.get<std::string>("oauth.profile_request_url");
+	OAUTH_MAIL_REQUEST_URL		= config.get<std::string>("oauth.mail_request_url");
+	OAUTH_ACCESS_URL			= config.get<std::string>("oauth.access_url");
+	OAUTH_AUTHORIZE_URL			= config.get<std::string>("oauth.authorize_url");
 }

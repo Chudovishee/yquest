@@ -27,6 +27,7 @@ const int login_fail			= 8;
 const int google_login_fail		= 9;
 
 const int auth_fail				= 10; //токен и ид не прошли проверку при выполнении комманды
+const int auth_ok				= 12;
 
 const int command_fail			= 11; //команда зафэйлилась или не была найдена
 

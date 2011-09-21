@@ -15,16 +15,17 @@
 
 #include <mongo/client/dbclient.h>
 
-#include "log.h"
-#include "db.h"
-
 typedef boost::asio::ssl::stream<boost::asio::ip::tcp::socket> ssl_socket;
+class Server;
+class Log;
+class DB;
 
-class session {
+class Session {
 public:
-  session(boost::asio::io_service& io_service,
+  Session(Server * server,
+	  boost::asio::io_service& io_service,
       boost::asio::ssl::context& context);
-  ~session();
+  ~Session();
 
   ssl_socket::lowest_layer_type& socket();
 
@@ -36,8 +37,9 @@ public:
 
   void handle_write(const boost::system::error_code& error);
 
-  void handle_google();
+  void handle_google(bool ok);
 
+  const  mongo::OID & id();
 private:
   ssl_socket _socket;
   enum {
@@ -45,7 +47,8 @@ private:
   };
   char data[max_length];
 
-  void processCommand();
+  inline void processCommand();
+
 
   Log * log;
   DB * db;
@@ -53,10 +56,12 @@ private:
   boost::asio::streambuf response_buf;	//буфер ответа сервера
   std::istream request;
   std::ostream response;
-  mongo::OID id;
+  mongo::OID _id;
 
   int lastCommand;
   bool deleteBeforeWrite;
+  bool deleting; // true ставит деструктор, значит ненадо его заново вызывать когда заваливается сокет
+  Server * server;
 
 };
 

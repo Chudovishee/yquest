@@ -8,92 +8,94 @@
 #include "session.h"
 #include "constants.h"
 #include <time.h>
-#include "UpdateGoogleData.h"
 
-session::session(boost::asio::io_service& io_service,
-      boost::asio::ssl::context& context)
+#include "UpdateGoogleData.h"
+#include "log.h"
+#include "db.h"
+#include "server.h"
+
+Session::Session(Server * server,
+		boost::asio::io_service& io_service,
+		boost::asio::ssl::context& context)
     : _socket(io_service, context),
       request_buf(max_length),
       response_buf(max_length),
       request(&request_buf),
-      response(&response_buf){
+      response(&response_buf),
+      server(server){
 
 	lastCommand = noneCommand;
 	deleteBeforeWrite = false;
 	log = Log::Instance();
 	log->write("new session");
 
-	db = DB::Instance();
+	db = DB::SingleInstance();
 
-	id.clear();
+	_id.clear();
+	deleting = false;
 
   }
 
-session::~session() {
-	// TODO Auto-generated destructor stub
+Session::~Session() {
+	log->write("session delete");
+	deleting = true;
+	//если у нас валидный идшник, скажем серверу чтом ы умерли,
+	//иначе сервер даже незнает о нас и ему насрать :)
+	if(_id.isSet()){
+		server->removeSession(this);
+	}
 }
 
 
-ssl_socket::lowest_layer_type& session::socket(){
+const mongo::OID & Session::id(){
+	return _id;
+}
+
+ssl_socket::lowest_layer_type& Session::socket(){
   return _socket.lowest_layer();
 }
 
-void session::start(){
-
-	//std::cout << "start " << boost::this_thread::get_id() << std::endl;
+void Session::start(){
 
    _socket.async_handshake(boost::asio::ssl::stream_base::server,
-       boost::bind(&session::handle_handshake, this,
+       boost::bind(&Session::handle_handshake, this,
          boost::asio::placeholders::error));
    log->write("start new session");
 
-	  UpdateGoogleData *g = new UpdateGoogleData(_socket.io_service());
-	  g->request(mongo::OID("4e70cd11aa8f692628000000"),
-			  boost::bind(&session::handle_google, this));
 
 }
 
-void session::handle_handshake(const boost::system::error_code& error){
+void Session::handle_handshake(const boost::system::error_code& error){
 
-	//std::cout << "handle_handshake " << boost::this_thread::get_id() << std::endl;
+	log->write( "handle_handshake ");
 
   if (!error){
-	  log->write("handle_handshake");
 	  boost::asio::async_read_until(_socket, request_buf, "\n",
-	           boost::bind(&session::handle_read, this,
+	           boost::bind(&Session::handle_read, this,
 	             boost::asio::placeholders::error));
 
 
 
   }
-  else
-  {
+  else{
 	log->write(error.message());
-    delete this;
+    if(!deleting)
+    	delete this;
   }
 }
 
-void session::handle_google(){
-	std::cout << "handle_google " << boost::this_thread::get_id() << std::endl;
-
+void Session::handle_google(bool ok){
+	log->write("handle_google ");
 }
 
 
-void session::handle_read(const boost::system::error_code& error){
-	//std::cout << "handle_read " << boost::this_thread::get_id() << std::endl;
+void Session::handle_read(const boost::system::error_code& error){
+	log->write( "handle_read " );
 
   if (!error)
   {
 	  lastCommand = 0;
-	  log->write("handle_read");
-	  //std::string str;
 	  request >> lastCommand;
-	  //std::getline(request,str);
-
-	  //std::cout << " str("<<str<< ")" <<std::endl;
-	  //boost::asio::async_read_until(_socket, request_buf, "\r\n",
-	  //         boost::bind(&session::handle_read, this,
-	  //           boost::asio::placeholders::error));
 	  processCommand();
 
 	  //ignore \n
@@ -101,31 +103,35 @@ void session::handle_read(const boost::system::error_code& error){
   }
   else{
 	  log->write(error.message());
-	  delete this;
+	if(!deleting)
+		delete this;
   }
 }
 
-void session::handle_write(const boost::system::error_code& error){
+void Session::handle_write(const boost::system::error_code& error){
 
-	//std::cout << "handle_write " << boost::this_thread::get_id() << std::endl;
+	log->write( "handle_write " );
 
 	if(error){
 		log->write(error.message());
-		delete this;
+	    if(!deleting)
+	    	delete this;
 	}else if (deleteBeforeWrite){
-		delete this;
+	    if(!deleting)
+	    	delete this;
 	}else{
-	  log->write("handle_write");
+	//  log->write("handle_write");
 	  boost::asio::async_read_until(_socket, request_buf, "\n",
-	           boost::bind(&session::handle_read, this,
+	           boost::bind(&Session::handle_read, this,
 	             boost::asio::placeholders::error));
 	}
 
 }
 
 
-void session::processCommand(){
-	if(id.isSet()){
+inline void Session::processCommand(){
+	boost::this_thread::sleep(boost::posix_time::seconds(5));
+	if(_id.isSet()){
 
 	}
 	else{
@@ -135,6 +141,8 @@ void session::processCommand(){
 			auth_token;
 		mongo::BSONObj user;
 		mongo::OID oid;
+		UpdateGoogleData *g;
+
 		switch(lastCommand){
 		/*
 		 * Проверка протокола
@@ -149,35 +157,61 @@ void session::processCommand(){
 			//std::cout << protocol << std::endl;
 			if(protocol == YQUEST_PROTOCOL){
 				log->write("Protocol OK");
-				response << protocolCommand << NOT_ERROR ;
+				response << protocolCommand << ' ' << NOT_ERROR << '\n';
 			}
 			else{
 				log->write("Protocol error");
 				deleteBeforeWrite = true;
-				response << protocolCommand << PROTOCOL_ERROR ;
+				response << protocolCommand << ' ' << PROTOCOL_ERROR << '\n';
 			}
 			break;
 		/*
 		 * Проверка токена, авторизация
 		 * Синтаксис:
 		 * authCommand auth_id auth_token
+		 * Ответ:
+		 * protocolCommand PROTOCOL_ERROR - если где-то ошбика в сообщении
+		 * authCommand auth_fail - токен не подошел
+		 * authCommand auth_ok   - все ok
 		 */
 		case authCommand:
 			request >> auth_id >> auth_token;
-			oid.init(auth_id);
-			user = db->findOne("yquest.users", QUERY("_id" << oid));
-			std::cout << user["auth_token"].String() << std::endl;
+
+			if(auth_id.size() == 24){
+				oid.init(auth_id);
+				user = db->findOne("yquest.users", QUERY("_id" << oid));
+
+				//std::cout << user["auth_token"].String()<< std::endl;
+				//std::cout << auth_token << std::endl;
+
+				if(!user.isEmpty() &&
+						(user["auth_token"].type() == mongo::String) &&
+						(user["auth_token"].String() == auth_token) ){
+					log->write("auth ok");
+					//скажем серверу привет!
+					server->addSession(this);
+					response << authCommand << ' ' << auth_ok << '\n';
+				}else{
+					log->write("auth fail");
+					deleteBeforeWrite = true;
+					response << authCommand << ' ' << auth_fail << '\n';
+				}
+			}
+			else{
+				deleteBeforeWrite = true;
+				response << protocolCommand << ' ' << PROTOCOL_ERROR << '\n';
+			}
 			break;
 
 		default:
 			log->write("unresolved command");
 			deleteBeforeWrite = true;
-			response << protocolCommand << PROTOCOL_ERROR ;
+			response << protocolCommand << ' ' << PROTOCOL_ERROR << '\n';
 			break;
 		}
 		//write
 		boost::asio::async_write(_socket, response_buf,
-				boost::bind(&session::handle_write, this,
+				boost::bind(&Session::handle_write, this,
 						boost::asio::placeholders::error));
 	}
 }

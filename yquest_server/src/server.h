@@ -25,10 +25,13 @@ public:
 	virtual ~Server();
 
 	void start_accept();
-	void handle_accept(session* new_session,
+	void handle_accept(Session* new_session,
 	     const boost::system::error_code& error);
 
 	void run();
+
+	void addSession(Session* session);
+	void removeSession(Session* session);
 
 
 private:
@@ -40,7 +43,7 @@ private:
 	Log *log;
 
 	//
-	boost::unordered_map< mongo::OID , session *> sessions;
+	boost::unordered_map< std::string , Session *> sessions;
 };
 
 #endif /* SERVER_H */

@@ -32,7 +32,8 @@ public:
 	std::string OAUTH_SECRET;
 	std::string OAUTH_SCOPE;
 	std::string OAUTH_REQUEST_URL;
-	std::string OAUTH_API_URL;
+	std::string OAUTH_PROFILE_REQUEST_URL;
+	std::string OAUTH_MAIL_REQUEST_URL;
 	std::string OAUTH_ACCESS_URL;
 	std::string OAUTH_AUTHORIZE_URL;
 private:

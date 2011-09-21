@@ -45,19 +45,37 @@ void Server::run(){
 	io_service.run();
 }
 
+void Server::addSession(Session * session){
+	std::string id_s = session->id().str();
+
+	if(sessions.find(id_s) != sessions.end()){
+		//пока старый :)
+		log->write(id_s + " unstoraged");
+		delete sessions[id_s];
+	}
+	log->write(id_s + " storaged");
+	sessions[id_s] = session;
+}
+
+void Server::removeSession(Session * session){
+	boost::unordered_map< std::string , Session *>::iterator find = sessions.find(session->id().str());
+	if(find != sessions.end()){
+		//пока-пока!
+		sessions.erase(find);
+	}
+}
+
 void Server::start_accept(){
-   session* new_session = new session(io_service, context);
+   Session* new_session = new Session(this,io_service, context);
    acceptor.async_accept(new_session->socket(),
        boost::bind(&Server::handle_accept, this, new_session, boost::asio::placeholders::error));
  }
 
- void Server::handle_accept(session* new_session,
+ void Server::handle_accept(Session* new_session,
      const boost::system::error_code& error){
    if (!error){
 	   log->write("accept new connection");
      new_session->start();
-     //sessions.push_back(new_session);
-     //sessions.
    }
    else{
 	   log->write("error accepting new connection: " + error.message());

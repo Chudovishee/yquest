@@ -64,58 +64,17 @@ public class YquestActivity extends Activity {
         
         
         
-        try {
-        	SSCSSLSocketFactory factory;
-			
-        	factory = new SSCSSLSocketFactory(null);
-			
-            SSLSocket s = (SSLSocket) factory.createSocket();
-            s.connect(new InetSocketAddress("192.168.2.9",6960));
-            
-            //outgoing stream redirect to socket
-            OutputStream out =  s.getOutputStream();
-            
-            PrintWriter output = new PrintWriter(out);
-            //output.format("%1$d %2$d",Constants.protocolCommand,Constants.YQUEST_PROTOCOL);
-            //output.print(Constants.protocolCommand);
-            //output.print(' ');
-            //output.print(Constants.YQUEST_PROTOCOL);
-            output.print("2 1\n");
- //           output.flush();
-            BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            output.print("1 4e70c9c1aa8f694d1b000000 43da342a43d99cbdd97081807073a40d32f2ea40f4768319d65848704208af872f355d976bdbef317c70d083ac1cd1af431d1e866e1168e71015b479ed50763b\n");
-            output.flush();
-            
-            //read line(s)
-            String st = input.readLine();
-            Log.i(TAG,st);
-            //output.format("%1$d %2$d",Constants.protocolCommand,Constants.YQUEST_PROTOCOL);
-            //output.println();
-            //output.flush();
-            //Close connection
-            //s.close();
-            
-	            
-	    } catch (UnknownHostException e) {
-	            // TODO Auto-generated catch block
-	            e.printStackTrace();
-	    } catch (IOException e) {
-	            // TODO Auto-generated catch block
-	            e.printStackTrace();
-	    }catch (KeyManagementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnrecoverableKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        YquestClient client = new YquestClient(){
+            protected void onProgressUpdate(String... strings) {
+                int count = strings.length;
+                for (int i = 0; i < count; i++) {
+                    Log.i(TAG,strings[i]);
+                }
+            }
+        };
+        client.execute();
         
+ 
         
         
         

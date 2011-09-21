@@ -29,35 +29,26 @@ int main(int argc, const char* argv[] ) {
 		std::cout << "loading config..." << std::endl;
 
 		Config * config = Config::Instance();
+		Log * log = Log::Instance();
+
 		config->load(config_file);
 
 		std::cout << "config loaded" << std::endl;
-
-		//starting server
-		Log * log = Log::Instance();
-		DB * db = DB::Instance();
-
 
 		log->exceptions ( std::ofstream::failbit | std::ofstream::badbit );
 		//open log
 		log->open( config->SERVER_LOG.c_str() , std::ios_base::out | std::ios_base::app);
 
 
-
 		log->write("\n\nstarting server");
 
-		std::string errmsg;
-		db->connect(config->MONGO_SERVER);
-		if(db->auth(config->MONGO_DB,config->MONGO_USER,config->MONGO_PASSWORD,errmsg)){
-
-			log->write("db opened");
+		DB * db = DB::SingleInstance();
+		if(db){
 
 			Server server(config->SERVER_HOST, config->SERVER_PORT);
 			log->write("creat new server");
 			server.run();
 
-		}else{
-			log->write(errmsg);
 		}
 
 	}
@@ -76,10 +67,6 @@ int main(int argc, const char* argv[] ) {
 	//logs errors
 	catch (std::ofstream::failure e) {
 	    std::cout << "Error opening log file: " << e.what() << std::endl;
-	}
-	//server errors
-	catch( mongo::DBException e ) {
-		std::cout << "caught " << e.what() << endl;
 	} catch (std::exception& e){
 	    std::cout << "Exception: " << e.what() << "\n";
   }

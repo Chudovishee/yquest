@@ -11,11 +11,13 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <mongo/client/dbclient.h>
-#include <oauth.h>
-
+extern "C" {
+  #include "oauth.h"
+}
 class UpdateGoogleData {
 public:
-	typedef boost::function<void ()> CompletionHandler;
+	typedef boost::function<void (bool ok)> CompletionHandler;
+
 	UpdateGoogleData(boost::asio::io_service& io_service);
 	virtual ~UpdateGoogleData();
 
@@ -25,7 +27,6 @@ public:
 private:
 	boost::thread * thread;
 	void doInBackground(const mongo::OID & user_id,CompletionHandler handler);
-	boost::function2<float, int, int> f;
 
 	boost::asio::io_service &io_service;
 };
