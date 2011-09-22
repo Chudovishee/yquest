@@ -37,7 +37,7 @@ public:
 
   void handle_write(const boost::system::error_code& error);
 
-  void handle_google(bool ok);
+  void handle_auth(bool ok);
 
   const  mongo::OID & id();
 private:

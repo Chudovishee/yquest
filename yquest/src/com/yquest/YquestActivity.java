@@ -59,20 +59,45 @@ public class YquestActivity extends Activity {
         super.onCreate(savedInstanceState);
         
         setContentView(R.layout.login);
+        try {
+        
+        	SSCSSLSocketFactory factory;
+		
 
+			factory = new SSCSSLSocketFactory(null);
+		
+	        SSLSocket s = (SSLSocket) factory.createSocket();
+	        s.connect(new InetSocketAddress("192.168.2.9",6960));
+	        
+	        AuthRequest auth = new AuthRequest(s);
+	        auth.execute();
+			
+    	} catch (KeyManagementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (KeyStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnrecoverableKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         
-        
-        
-        
-        YquestClient client = new YquestClient(){
-            protected void onProgressUpdate(String... strings) {
-                int count = strings.length;
-                for (int i = 0; i < count; i++) {
-                    Log.i(TAG,strings[i]);
-                }
-            }
-        };
-        client.execute();
+//        YquestClient client = new YquestClient(){
+//            protected void onProgressUpdate(String... strings) {
+//                int count = strings.length;
+//                for (int i = 0; i < count; i++) {
+//                    Log.i(TAG,strings[i]);
+//                }
+//            }
+//        };
+//        client.execute();
         
  
         

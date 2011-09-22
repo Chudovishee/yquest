@@ -9,7 +9,7 @@
 #include "constants.h"
 #include <time.h>
 
-#include "UpdateGoogleData.h"
+#include "AuthCommand.h"
 #include "log.h"
 #include "db.h"
 #include "server.h"
@@ -84,8 +84,8 @@ void Session::handle_handshake(const boost::system::error_code& error){
   }
 }
 
-void Session::handle_google(bool ok){
-	log->write("handle_google ");
+void Session::handle_auth(bool ok){
+	log->write("handle_auth ");
 }
 
 
@@ -130,7 +130,7 @@ void Session::handle_write(const boost::system::error_code& error){
 
 
 inline void Session::processCommand(){
-	boost::this_thread::sleep(boost::posix_time::seconds(5));
+	boost::this_thread::sleep(boost::posix_time::seconds(1));
 	if(_id.isSet()){
 
 	}
@@ -141,7 +141,7 @@ inline void Session::processCommand(){
 			auth_token;
 		mongo::BSONObj user;
 		mongo::OID oid;
-		UpdateGoogleData *g;
+		AuthCommand * auth;
 
 		switch(lastCommand){
 		/*
@@ -164,6 +164,10 @@ inline void Session::processCommand(){
 				deleteBeforeWrite = true;
 				response << protocolCommand << ' ' << PROTOCOL_ERROR << '\n';
 			}
+
+			boost::asio::async_write(_socket, response_buf,
+					boost::bind(&Session::handle_write, this,
+							boost::asio::placeholders::error));
 			break;
 		/*
 		 * Проверка токена, авторизация
@@ -177,41 +181,22 @@ inline void Session::processCommand(){
 		case authCommand:
 			request >> auth_id >> auth_token;
 
-			if(auth_id.size() == 24){
-				oid.init(auth_id);
-				user = db->findOne("yquest.users", QUERY("_id" << oid));
+			auth = new AuthCommand(_socket.io_service());
+			auth->exec(auth_id,auth_token,
+					boost::bind(&Session::handle_auth, this,_1));
 
-				//std::cout << user["auth_token"].String()<< std::endl;
-				//std::cout << auth_token << std::endl;
-
-				if(!user.isEmpty() &&
-						(user["auth_token"].type() == mongo::String) &&
-						(user["auth_token"].String() == auth_token) ){
-					log->write("auth ok");
-					//скажем серверу привет!
-					server->addSession(this);
-					response << authCommand << ' ' << auth_ok << '\n';
-				}else{
-					log->write("auth fail");
-					deleteBeforeWrite = true;
-					response << authCommand << ' ' << auth_fail << '\n';
-				}
-			}
-			else{
-				deleteBeforeWrite = true;
-				response << protocolCommand << ' ' << PROTOCOL_ERROR << '\n';
-			}
 			break;
 
 		default:
 			log->write("unresolved command");
 			deleteBeforeWrite = true;
 			response << protocolCommand << ' ' << PROTOCOL_ERROR << '\n';
+			boost::asio::async_write(_socket, response_buf,
+					boost::bind(&Session::handle_write, this,
+							boost::asio::placeholders::error));
 			break;
 		}
 		//write
-		boost::asio::async_write(_socket, response_buf,
-				boost::bind(&Session::handle_write, this,
-						boost::asio::placeholders::error));
+
 	}
 }

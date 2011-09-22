@@ -31,4 +31,9 @@ const int auth_ok				= 12;
 
 const int command_fail			= 11; //команда зафэйлилась или не была найдена
 
+//user
+const int google_auth = 1;
+const int yquest_auth = 2;
+const int auth_token_expiration = 60;//86400; //1день
+
 #endif
